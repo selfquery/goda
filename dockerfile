@@ -43,5 +43,8 @@ RUN cd /usr/local/bin && \
 # init terraform
 RUN terraform init -input=false
 
+# fix build script line endings
+RUN sed -i 's/\r$//' ./scripts/build_terraform.sh
+
 # run terraform build
 CMD ["sh", "./scripts/build_terraform.sh"]
