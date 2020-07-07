@@ -1,0 +1,7 @@
+*.tfstate
+*.tfstate.*
+*.zip
+.localstack
+.terraform
+bin
+output.txt

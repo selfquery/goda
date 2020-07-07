@@ -1,0 +1,29 @@
+version: '3.2'
+services:
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports:
+      - '4563-4584:4563-4584'
+      - '8055:8080'
+    environment:
+      - SERVICES=serverless
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+    volumes:
+      - './.localstack:/tmp/localstack'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    networks:
+      - localstack-net
+
+  service:
+    build: '.'
+    container_name: 'service'
+    networks:
+      - localstack-net
+    depends_on:
+      - localstack
+
+networks:
+  localstack-net:
