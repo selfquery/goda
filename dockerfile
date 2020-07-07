@@ -1,40 +1,47 @@
-
 ###########
 # BUILDER #
 ###########
-
-# pull official base image
-FROM alpine:latest as builder
-
-ENV TERRAFORM_VERSION 0.12.28
+FROM lambci/lambda:build-go1.x as builder
 
 # set work directory
-RUN apk add --no-cache git make musl-dev go zip curl
-WORKDIR /usr/src/app
-
-# set environment variables
-ENV GOROOT /usr/lib/go
-ENV GOPATH /go
-ENV PATH /go/bin:$PATH
+WORKDIR /app
 
 # set work directory
-COPY . /usr/src/app/
+COPY . /app
 
 # install deps
-RUN go get "github.com/aws/aws-lambda-go/lambda"
-RUN go get "github.com/aws/aws-lambda-go/events"
+RUN go mod download
 
 # build
 RUN GOOS=linux GOARCH=amd64 go build -o ./bin/service ./src
 
-# zip
-RUN zip service.zip ./bin/service
+RUN zip -j service.zip ./bin/service
 
+#########
+# Final #
+#########
+FROM alpine:latest
+
+ENV TERRAFORM_VERSION 0.12.28
+
+# set work directory
+RUN apk add --no-cache curl
+WORKDIR /usr/src/app
+
+# set work directory
+COPY . /usr/src/app/
+
+# copy binary from builder
+COPY --from=builder /app/service.zip .
+
+# download terraform
 RUN cd /usr/local/bin && \
     curl https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -o terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
     unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
     rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 
+# init terraform
 RUN terraform init -input=false
 
-CMD ["sh", "build.sh"]
+# run terraform build
+CMD ["sh", "./scripts/build_terraform.sh"]

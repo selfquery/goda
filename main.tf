@@ -59,7 +59,7 @@ resource "aws_lambda_function" "service" {
   filename      = "service.zip"
   function_name = "service"
   handler       = "service"
-  role          = "aws_iam_role.iam_service.arn"
+  role          = "${aws_iam_role.iam_service.arn}"
 
   source_code_hash = "filebase64sha256('service.zip')"
 

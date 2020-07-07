@@ -5,3 +5,4 @@
 .terraform
 bin
 output.txt
+service
