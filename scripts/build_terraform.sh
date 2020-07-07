@@ -1,6 +1,7 @@
 #!/bin/sh
 
-until $(curl --output /dev/null --silent --head --fail http://localstack:4572); do
+until $(curl --output /dev/null --silent --head --fail http://localstack:4572)
+do
     echo 'waiting for localstack ...'
     sleep 5
 done
